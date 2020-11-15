@@ -1,9 +1,9 @@
 /**
  * zChess functionality script
  * @author Jacob Pradels
- * @version 0.03
+ * @version 0.04
  * 
- * @todo add movement for Queen, King, Knight, Pawn
+ * @todo add movement for Queen, King
  * @todo add check implementation
  * @todo Fix the update script to remove pieces from the board
  * @todo allow front end movement of pieces 
@@ -224,14 +224,44 @@ function checkLegalMove(piece, y, x, pos)
                 }
             }
             return false;
+        /*
+        * Knight functionality
+        * 8 Possible moves
+        * (y+2)(x+1), (y-2)(x+1), (y+2)(x-1), (y-2)(x-1), (y+1)(x+2), (y-1)(x-2), (y+1)(x-2), (y-1)(x-2)
+        */
+        } else if (piece_element.classList.contains("knight"))
+        {
+            if ((y == piece_y + 2 && x == piece_x + 1) 
+            || (y == piece_y - 2 && x == piece_x + 1) 
+            || (y == piece_y + 2 && x == piece_x - 1) 
+            || (y == piece_y - 2 && x == piece_x - 1) 
+            || (y == piece_y + 1 && x == piece_x + 2) 
+            || (y == piece_y - 1 && x == piece_x - 2) 
+            || (y == piece_y + 1 && x == piece_x - 2) 
+            || (y == piece_y - 1 && x == piece_x - 2)) 
+            {
+                if (other_element != null)
+                {
+                    if (piece_element.classList.contains("dark"))
+                    {
+                        if (other_element.classList.contains("light"))
+                        {
+                            return true
+                        }
+                    } else if (other_element.classList.contains("dark"))
+                    {
+                        return true;
+                    }
+                } else {
+                    return true;
+                }
+            }
+            return false;
         }
     }
 }
 function init()
 {
     updateBoard();
-    movePiece("dp0",3,0);
-    movePiece("lp1",4,1);
-    movePiece("dp0",4,1);
     updateBoard();
 }
