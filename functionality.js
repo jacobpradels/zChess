@@ -1,7 +1,7 @@
 /**
  * zChess functionality script
  * @author Jacob Pradels
- * @version 0.02
+ * @version 0.03
  * 
  * @todo add movement for Queen, King, Knight, Pawn
  * @todo add check implementation
