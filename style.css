@@ -12,13 +12,13 @@
   flex-direction: row;
 }
 
-.light {
+.lightsquare {
   width: 5vw;
   height: 5vw;
   background-color: gray;
 }
 
-.dark {
+.darksquare {
   width: 5vw;
   height: 5vw;
   background-color: black;
