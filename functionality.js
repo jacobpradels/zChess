@@ -1,3 +1,13 @@
+/**
+ * zChess functionality script
+ * @author Jacob Pradels
+ * @version 0.02
+ * 
+ * @todo add movement for Queen, King, Knight, Pawn
+ * @todo add check implementation
+ * @todo Fix the update script to remove pieces from the board
+ * @todo allow front end movement of pieces 
+ */
 window.onload = init;
 var board = [
     ["dr0","dn0","db0","dq","dk","db1","dn1","dr1"],
@@ -80,14 +90,6 @@ function checkLegalMove(piece, y, x, pos)
     {
         return false;
     //Check if player is attempting to take their own piece
-    } else if (other_element != null) {
-        if (other_element.classList.contains("dark") && piece_element.classList.contains("dark"))
-        {
-            return false;
-        } else if (other_element.classList.contains("light") && piece_element.classList.contains("light"))
-        {
-            return false;
-        }
     } else {
         /*
         * Seperate check for every piece
@@ -181,13 +183,55 @@ function checkLegalMove(piece, y, x, pos)
                 }
                 return true;
             }
+        } else if (piece_element.classList.contains("pawn"))
+        { 
+            
+            if (piece_element.classList.contains("dark"))
+            {
+                if (y == piece_y + 1 && board[y][x] == "n" && x == piece_x)
+                {
+                    return true;
+                } else if (y == piece_y + 2 && board[y][x] == "n" && board[y-1][x] == "n" && piece_y == 1 && x == piece_x)
+                {
+                    return true;
+                } else if (y = piece_y + 1 && x == piece_x + 1)
+                {
+                    if (other_element != null)
+                    {
+                        if (other_element.classList.contains("light"))
+                        {
+                            return true;
+                        }
+                    }
+                }
+            } else if (piece_element.classList.contains("light"))
+            {
+                if (y == piece_y - 1 && board[y][x] == "n" && x == piece_x)
+                {
+                    return true;
+                } else if (y == piece_y - 2 && board[y][x] == "n" && board[y+1][x] == "n" && piece_y == 6 && x == piece_x)
+                {
+                    return true;
+                } else if (y = piece_y + 1 && x == piece_x + 1)
+                {
+                    if (other_element != null)
+                    {
+                        if (other_element.classList.contains("dark"))
+                        {
+                            return true;
+                        }
+                    }
+                }
+            }
+            return false;
         }
     }
 }
 function init()
 {
     updateBoard();
-    console.log(findPiece("db0"));
-    // movePiece("db0",5,7);
+    movePiece("dp0",3,0);
+    movePiece("lp1",4,1);
+    movePiece("dp0",4,1);
     updateBoard();
 }
