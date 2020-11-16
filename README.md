@@ -27,6 +27,7 @@ All chess rules for legal moves are currently implemented in the engine includin
 ## Planned updates *(In order of precedence)*
 - Checkmate / Stalemate detection
 - Turn system
+- Sound effects
 - Code refactoring
 - Mobile support
 - Move King to Rook in order to Castle 
