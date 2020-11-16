@@ -1,6 +1,6 @@
 //Make the object in hand always on top
-var offsetX = -475;
-var offsetY = -50;
+var offsetX = -560;
+var offsetY = -150;
 var holding = false;
 var target, targetSquare;
 window.onclick = e => {
