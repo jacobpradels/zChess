@@ -120,7 +120,7 @@ function movePiece(piece, file, rank)
     }
     
 
-    console.log(checkLegalMove(piece,y,x,piece_position, board)); //Prints true or false to show if move was valid
+    // console.log(checkLegalMove(piece,y,x,piece_position, board)); //Prints true or false to show if move was valid
     if (checkLegalMove(piece,y,x,piece_position,board) == "e")
     {
         temp_board = JSON.parse(JSON.stringify(board)); // Deep copy board in case need to revert
@@ -424,8 +424,9 @@ function checkPawn(piece_y,piece_x,y,x, piece_element, other_element)
         if (y == piece_y - 1 && board[y][x] == "n" && x == piece_x)
         {
             return true;
-        } else if (y == piece_y - 2 && board[y][x] == "n" && (board[y-1][x] == "n") && piece_y == 6 && x == piece_x)
+        } else if (y == piece_y - 2 && board[y][x] == "n" && (board[y+1][x] == "n" || board[y+1][x] == "e") && piece_y == 6 && x == piece_x)
         {
+            console.log("this one");
             enpassant = true;
             board[y+1][x] = "e";
             return true;
