@@ -1,5 +1,5 @@
 //Make the object in hand always on top
-var offsetX = -50;
+var offsetX = -475;
 var offsetY = -50;
 var holding = false;
 var target, targetSquare;

@@ -1,7 +1,7 @@
 /**
  * zChess functionality script
  * @author Jacob Pradels
- * @version 0.04
+ * @version 0.09
  * 
  * @todo add movement for Queen, King
  * @todo add check implementation
@@ -11,6 +11,10 @@
 window.onload = init;
 
 var temp_board;
+var enpassant = false;
+
+var dr0Moved = false, dr1Moved = false, dkMoved = false, lr0Moved = false, lr1Moved = false, lkMoved = false;
+
 var board = [
     ["dr0","dn0","db0","dq","dk","db1","dn1","dr1"],
     ["dp0","dp1","dp2","dp3","dp4","dp5","dp6","dp7"],
@@ -38,7 +42,7 @@ function updateBoard()
     {
         for (var x = 0; x < 8; x++)
         {
-            if (board[y][x] != "n")
+            if (board[y][x] != "n" && board[y][x] != "e")
             {
                 var elmnt = document.getElementById(board[y][x]);
                 if (elmnt != null)
@@ -49,6 +53,14 @@ function updateBoard()
                     }
                     elmnt.style.top = y*5 + "vw";
                     elmnt.style.left = x*5 + "vw";
+                }
+            } else if (board[y][x] == "e")
+            {
+                if (enpassant)
+                {
+                    enpassant = false;
+                } else {
+                    board[y][x] = "n";
                 }
             }
         }
@@ -109,7 +121,69 @@ function movePiece(piece, file, rank)
     
 
     console.log(checkLegalMove(piece,y,x,piece_position, board)); //Prints true or false to show if move was valid
-    if (checkLegalMove(piece,y,x,piece_position, board))
+    if (checkLegalMove(piece,y,x,piece_position,board) == "e")
+    {
+        temp_board = JSON.parse(JSON.stringify(board)); // Deep copy board in case need to revert
+        board[piece_position[0]][piece_position[1]] = "n";
+        if (color == "light")
+        {
+            board[8].push(board[y+1][x]);
+            board[y+1][x] = "n";
+            board[y][x] = piece;
+        } else if (color == "dark")
+        {
+            board[8].push(board[y-1][x])
+            board[y-1][x] = "n";
+            board[y][x] = piece;
+        }
+        
+        if (checkCheck(color))
+        {
+            console.log("Illegal move. " + color + " king is in check");
+            board = JSON.parse(JSON.stringify(temp_board)); // Revert the board to before the move
+        }
+    } else if (checkLegalMove(piece,y,x,piece_position,board) == "castle") 
+    {
+        var king_y = piece_position[0];
+        var king_x = piece_position[1];
+        if (x == king_x - 2) // Castle queen side
+        {
+            if (board[y][king_x-1] == "n" && board[y][king_x-2] == "n" && board[y][king_x-3] == "n")
+            {
+                if (!checkThreat(color, king_y, king_x) && !checkThreat(color,king_y,king_x-1) && !checkThreat(color,king_y,king_x-2) && !checkThreat(color,king_y,king_x-3));
+                {
+                    board[king_y][king_x] = "n";
+                    board[y][x] = piece;
+                    board[y][x+1] = board[y][x-2];
+                    board[king_y][king_x - 4] = "n";
+                    if (color == "dark")
+                    {
+                        dkMoved = true;
+                    } else if (color == "light") {
+                        lkMoved = true;
+                    }
+                }
+            }
+        } else if (x == king_x + 2) // Castle king side
+        {
+            if (board[y][king_x+1] == "n" && board[y][king_x+2] == "n")
+            {
+                if (!checkThreat(color,king_y,king_x) && !checkThreat(color,king_y,king_x+1) && !checkThreat(color,king_y,king_x+2))
+                {
+                    board[king_y][king_x] = "n";
+                    board[y][x] = piece;
+                    board[y][x-1] = board[king_y][king_x + 3];
+                    board[king_y][king_x + 3] = "n";
+                    if (color == "dark")
+                    {
+                        dkMoved = true;
+                    } else if (color == "light") {
+                        lkMoved = true;
+                    }
+                }
+            }
+        }
+    } else if (checkLegalMove(piece,y,x,piece_position, board))
     {
         temp_board = JSON.parse(JSON.stringify(board)); // Deep copy board in case need to revert
         board[piece_position[0]][piece_position[1]] = "n";
@@ -119,10 +193,27 @@ function movePiece(piece, file, rank)
         }
         board[y][x] = piece;
         
+        var reset = false;
         if (checkCheck(color))
         {
+            reset = true;
             console.log("Illegal move. " + color + " king is in check");
             board = JSON.parse(JSON.stringify(temp_board)); // Revert the board to before the move
+        }
+        if (!reset)
+        {
+            if (piece == "dr0") {
+                dr0Moved = true;
+            } else if  (piece == "dr1")
+            {
+                dr1Moved = true;
+            } else if (piece == "lr0")
+            {
+                lr0Moved = true;
+            } else if (piece = "lr1")
+            {
+                lr1Moved = true;
+            }
         }
 
     } else {
@@ -204,7 +295,11 @@ function checkLegalMove(piece, y, x, pos)
 var calls =0;
 function checkRook(piece_y, piece_x, y, x)
 {
-    
+    var color = "dark";
+    if (document.getElementById(board[piece_y][piece_x]).classList.contains("light"))
+    {
+        color = "light";
+    }
     if (piece_y == y)
     {
         for (var iter_x = 0; iter_x < 8; iter_x++)
@@ -217,6 +312,7 @@ function checkRook(piece_y, piece_x, y, x)
                 }
             }
         }
+        
         return true;
         //If the target position is vertically aligned with the rook
     } else if (piece_x == x)
@@ -305,8 +401,10 @@ function checkPawn(piece_y,piece_x,y,x, piece_element, other_element)
         if (y == piece_y + 1 && board[y][x] == "n" && x == piece_x)
         {
             return true;
-        } else if (y == piece_y + 2 && board[y][x] == "n" && board[y-1][x] == "n" && piece_y == 1 && x == piece_x)
+        } else if (y == piece_y + 2 && board[y][x] == "n" && (board[y-1][x] == "n" || board[y-1][x] == "e") && piece_y == 1 && x == piece_x)
         {
+            enpassant = true;
+            board[y-1][x] = "e";
             return true;
         } else if ((y == piece_y + 1 && x == piece_x + 1) || (y == piece_y + 1 && x == piece_x - 1))
         {
@@ -316,6 +414,9 @@ function checkPawn(piece_y,piece_x,y,x, piece_element, other_element)
                 {
                     return true;
                 }
+            } else if (board[y][x] == "e") // En passant check
+            {
+                return "e";
             }
         }
     } else if (piece_element.classList.contains("light"))
@@ -323,8 +424,10 @@ function checkPawn(piece_y,piece_x,y,x, piece_element, other_element)
         if (y == piece_y - 1 && board[y][x] == "n" && x == piece_x)
         {
             return true;
-        } else if (y == piece_y - 2 && board[y][x] == "n" && board[y-1][x] == "n" && piece_y == 6 && x == piece_x)
+        } else if (y == piece_y - 2 && board[y][x] == "n" && (board[y-1][x] == "n") && piece_y == 6 && x == piece_x)
         {
+            enpassant = true;
+            board[y+1][x] = "e";
             return true;
         } else if ((y == piece_y - 1 && x == piece_x + 1) || (y == piece_y -1 && x == piece_x - 1))
         {
@@ -334,8 +437,11 @@ function checkPawn(piece_y,piece_x,y,x, piece_element, other_element)
                 {
                     return true;
                 }
+            } else if (board[y][x] == "e")
+            {
+                return "e";
             }
-        }
+        } 
     }
     return false;
 }
@@ -391,14 +497,25 @@ function checkKing(piece_y, piece_x, y, x, piece_element, other_element)
             {
                 if (other_element.classList.contains("light"))
                 {
+                    dkMoved = true;
                     return true
                 }
             } else if (other_element.classList.contains("dark"))
             {
+                lkMoved = true;
                 return true;
             }
         } else {
             return true;
+        }
+    } else if ((y == piece_y && x == piece_x + 2) || (y == piece_y && x == piece_x - 2))
+    {
+        if (piece_element.classList.contains("light") && ((!lkMoved && !lr0Moved && x == piece_x - 2) || (!lkMoved && !lr1Moved && x == piece_x + 2)))
+        {
+            return "castle"; //lkMoved=true will be set in the movePiece function because checkCheck needs to be called
+        } else if (piece_element.classList.contains("dark") && ((!dkMoved && !dr0Moved) || (!dkMoved && !dr1Moved)))
+        {
+            return "castle";
         }
     }
     return false;
@@ -437,6 +554,42 @@ function checkCheck(color)
                     if (checkLegalMove(board[y][x],kingPos[0],kingPos[1],findPiece(board[y][x])))
                     {
                         console.log("light king in check");
+                        return true;
+                    }
+                }
+            }
+        }
+    }
+    return false;
+}
+
+function checkThreat(color, threatpos_y, threatpos_x)
+{
+    if (color == "dark")
+    {
+        for (var y = 0; y < 8; y++)
+        {
+            for (var x = 0; x < 8; x++)
+            {
+                if (board[y][x] != "n" && board[y][x].substring(0,1) != "d")
+                {
+                    if (checkLegalMove(board[y][x],threatpos_y,threatpos_x,findPiece(board[y][x])))
+                    {
+                        return true;
+                    }
+                }
+            }
+        }
+    } else if (color == "light")
+    {
+        for (var y = 0; y < 8; y++)
+        {
+            for (var x = 0; x < 8; x++)
+            {
+                if (board[y][x] != "n" && board[y][x].substring(0,1) != "l")
+                {
+                    if (checkLegalMove(board[y][x],threatpos_y,threatpos_x,findPiece(board[y][x])))
+                    {
                         return true;
                     }
                 }
