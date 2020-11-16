@@ -23,7 +23,7 @@ window.onclick = e => {
         var file = targetSquare.id.substring(0,1);
         var rank = parseInt(targetSquare.id.substring(1,2),10);
 
-        console.log("piece: " + piece + "position : " + file + rank);
+        // console.log("piece: " + piece + "position : " + file + rank);
         movePiece(piece,file,rank);
         updateBoard();
 
@@ -32,7 +32,7 @@ window.onclick = e => {
         if (e.target.classList.contains("piece"))
         {
             // target.style.pointerEvents = "unset";
-            console.log(e.target.id);  // to get the element tag name alone
+            // console.log(e.target.id);  // to get the element tag name alone
             target = document.getElementById(e.target.id);
             target.style.left = e.pageX + offsetX + "px";
             target.style.top = e.pageY + offsetY + "px";

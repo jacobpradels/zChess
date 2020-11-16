@@ -210,7 +210,7 @@ function movePiece(piece, file, rank)
             } else if (piece == "lr0")
             {
                 lr0Moved = true;
-            } else if (piece = "lr1")
+            } else if (piece == "lr1")
             {
                 lr1Moved = true;
             }
@@ -510,12 +510,18 @@ function checkKing(piece_y, piece_x, y, x, piece_element, other_element)
         }
     } else if ((y == piece_y && x == piece_x + 2) || (y == piece_y && x == piece_x - 2))
     {
-        if (piece_element.classList.contains("light") && ((!lkMoved && !lr0Moved && x == piece_x - 2) || (!lkMoved && !lr1Moved && x == piece_x + 2)))
+        if (piece_element.classList.contains("light") )
         {
-            return "castle"; //lkMoved=true will be set in the movePiece function because checkCheck needs to be called
-        } else if (piece_element.classList.contains("dark") && ((!dkMoved && !dr0Moved) || (!dkMoved && !dr1Moved)))
+            if (((!lkMoved && !lr0Moved) && x == piece_x - 2) || ((!lkMoved && !lr1Moved) && x == piece_x + 2))
+            {
+                return "castle"; //lkMoved=true will be set in the movePiece function because checkCheck needs to be called
+            }
+        } else if (piece_element.classList.contains("dark"))
         {
-            return "castle";
+            if ((!dkMoved && !dr0Moved && x == piece_x - 2) || (!dkMoved && !dr1Moved && x == piece_x + 2))
+            {
+                return "castle";
+            }
         }
     }
     return false;
