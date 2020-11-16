@@ -15,13 +15,13 @@
 .lightsquare {
   width: 5vw;
   height: 5vw;
-  background-color: gray;
+  background-color: rgb(189, 188, 148);
 }
 
 .darksquare {
   width: 5vw;
   height: 5vw;
-  background-color: black;
+  background-color: rgb(83, 83, 78);
 }
 
 .piece {
