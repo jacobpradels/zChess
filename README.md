@@ -13,6 +13,7 @@ An individually developed chess engine for implementing chess algorithms and per
 All chess rules for legal moves are currently implemented in the engine including:
 - Check
   - Pieces can't move if it doesn't get their king out of check
+  - Discovered attacks that put your own king in check aren't allowed
 - Castling
   - Cannot castle if King or any spaces in between are threatening check
 - En Passant
@@ -25,6 +26,7 @@ All chess rules for legal moves are currently implemented in the engine includin
 
 ## Planned updates *(In order of precedence)*
 - Checkmate / Stalemate detection
+- Turn system
 - Code refactoring
 - Mobile support
 - Move King to Rook in order to Castle 
@@ -40,4 +42,4 @@ All chess rules for legal moves are currently implemented in the engine includin
 - Piece not aligning with mouse position
 
 ## Credits
-zChess was started by Jacob Pradels in 2020 and thus far has been a single person development however if you are interested in contributing it is encouraged.
+zChess was started by Jacob Pradels in 2020 and has since been a single person development however if you are interested in contributing it is encouraged.
