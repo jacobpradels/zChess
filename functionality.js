@@ -9,6 +9,8 @@
  * @todo allow front end movement of pieces 
  */
 window.onload = init;
+
+var temp_board;
 var board = [
     ["dr0","dn0","db0","dq","dk","db1","dn1","dr1"],
     ["dp0","dp1","dp2","dp3","dp4","dp5","dp6","dp7"],
@@ -21,6 +23,10 @@ var board = [
     []
 ]
 
+function drawBoard()
+{
+
+}
 
 /**
  * Updates the locations of the HTML elements representing pieces
@@ -95,16 +101,32 @@ function movePiece(piece, file, rank)
     var y = position[0];
     var x = position[1];
     var piece_position = findPiece(piece);
-    console.log(checkLegalMove(piece,y,x,piece_position));
-    if (checkLegalMove(piece,y,x,piece_position))
+    var color = "dark";
+    if (document.getElementById(piece).classList.contains("light"))
     {
-        
+        color = "light";
+    }
+    
+
+    console.log(checkLegalMove(piece,y,x,piece_position, board)); //Prints true or false to show if move was valid
+    if (checkLegalMove(piece,y,x,piece_position, board))
+    {
+        temp_board = JSON.parse(JSON.stringify(board)); // Deep copy board in case need to revert
         board[piece_position[0]][piece_position[1]] = "n";
         if (board[y][x] != "n")
         {
             board[8].push(board[y][x]);
         }
         board[y][x] = piece;
+        
+        if (checkCheck(color))
+        {
+            console.log("Illegal move. " + color + " king is in check");
+            board = JSON.parse(JSON.stringify(temp_board)); // Revert the board to before the move
+        }
+
+    } else {
+        console.log("Illegal move. Piece is blocked or can't move like that.")
     }
 }
 
@@ -113,6 +135,8 @@ function checkLegalMove(piece, y, x, pos)
     var piece_y = pos[0];
     var piece_x = pos[1];
     var piece_element = document.getElementById(piece);
+    // console.log(y);
+    // console.log(board[y]);
     var other_element = document.getElementById(board[y][x]);
     var other_pos = findPiece(board[y][x]);
     var returnVal = false;
@@ -134,8 +158,6 @@ function checkLegalMove(piece, y, x, pos)
             {
                 if (other_element.classList.contains("dark"))
                 {
-                    console.log("hi");
-                    console.log("the literal requirement for this if statement : " + (piece_element.classList.contains("dark") && other_element.classList.contains("dark")))
                     return false;
                 }
             } else if (piece_element.classList.contains("light"))
@@ -150,58 +172,67 @@ function checkLegalMove(piece, y, x, pos)
         if (piece_element.classList.contains("rook"))
         {
             returnVal = checkRook(piece_y,piece_x,y,x);
-        //Bishop implementation
-        } else if (piece_element.classList.contains("bishop"))
+            //Bishop implementation
+        }else if (piece_element.classList.contains("bishop"))
         {            
             returnVal = checkBishop(piece_y, piece_x,y,x);
+            //Pawn implementation
         } else if (piece_element.classList.contains("pawn"))
         { 
-            returnVal = checkPawn(piece_y,piece_x,y,x,piece_element);
-        /*
-        * Knight functionality
-        * 8 Possible moves
-        * (y+2)(x+1), (y-2)(x+1), (y+2)(x-1), (y-2)(x-1), (y+1)(x+2), (y-1)(x-2), (y+1)(x-2), (y-1)(x-2)
-        */
+            returnVal = checkPawn(piece_y,piece_x,y,x,piece_element, other_element);
+            /*
+            * Knight functionality
+            * 8 Possible moves
+            * (y+2)(x+1), (y-2)(x+1), (y+2)(x-1), (y-2)(x-1), (y+1)(x+2), (y-1)(x-2), (y+1)(x-2), (y-1)(x-2)
+            */
         } else if (piece_element.classList.contains("knight"))
         {
             returnVal = checkKnight(piece_y,piece_x,y,x,piece_element,other_element);
+        } else if (piece_element.classList.contains("queen"))
+        {
+            returnVal = (checkRook(piece_y,piece_x,y,x) || checkBishop(piece_y, piece_x,y,x));
+            //returnVal = checkBishop(piece_y, piece_x,y,x);
+        } else if (piece_element.classList.contains("king"))
+        {
+            returnVal = checkKing(piece_y,piece_x,y,x, piece_element, other_element);
         }
     }
+    
     return returnVal;
 }
 
 var calls =0;
-function checkRook(piece_y, piece_x, x, y)
+function checkRook(piece_y, piece_x, y, x)
 {
-
+    
     if (piece_y == y)
+    {
+        for (var iter_x = 0; iter_x < 8; iter_x++)
         {
-            for (var iter_x = 0; iter_x < 8; iter_x++)
+            if (board[y][iter_x] != "n")
             {
-                if (board[y][iter_x] != "n")
+                if ((piece_x < iter_x && x > iter_x) || (piece_x > iter_x && x < iter_x))
                 {
-                    if ((piece_x < iter_x && x > iter_x) || (piece_x > iter_x && x < iter_x))
-                    {
-                        return false;
-                    }
+                    return false;
                 }
             }
-            return true;
-        //If the target position is vertically aligned with the rook
-        } else if (piece_x == x)
-        {
-            for (var iter_y = 0; iter_y < 8; iter_y++)
-            {
-                if (board[iter_y][x] != "n")
-                {
-                    if ((piece_y < iter_y && y > iter_y) || (piece_y > iter_y && y < iter_y))
-                    {
-                        return false;
-                    }
-                }
-            }
-            return true;
         }
+        return true;
+        //If the target position is vertically aligned with the rook
+    } else if (piece_x == x)
+    {
+        for (var iter_y = 0; iter_y < 8; iter_y++)
+        {
+            if (board[iter_y][x] != "n")
+            {
+                if ((piece_y < iter_y && y > iter_y) || (piece_y > iter_y && y < iter_y))
+                {
+                    return false;
+                }
+            }
+        }
+        return true;
+    }
 }
 
 function checkBishop(piece_y, piece_x, y, x)
@@ -223,11 +254,14 @@ function checkBishop(piece_y, piece_x, y, x)
             top_right[0]--;
             top_right[1]++;
         }
-        //This loop will go out of bounds, but javascript doesn't throw indexOutOfBounds so its okay and will just check the whole diagonal
         for (var iter_x = 0; iter_x < 8; iter_x++)
         {
             var current_y = top_left[0];
             var current_x = top_left[1];
+            if (current_y > 8)
+            {
+                break;
+            }
             if (board[current_y][current_x] != "n")
             {
                 if ((piece_x < current_x && piece_y < current_y) && (x > current_x && y > current_y))
@@ -242,24 +276,29 @@ function checkBishop(piece_y, piece_x, y, x)
             var current_x = top_right[1];
             if (board[current_y][current_x] != "n")
             {
-                if ((piece_x < current_x && piece_y < current_y) && (x > current_x && y > current_y))
+                //piece_x = piece trying to move
+                //current_x = where the iterator is at (piece in the way)
+                //x = piece being checked if can move or attack there
+                if ((piece_x < current_x && piece_y > current_y) && (x > current_x && y < current_y))
                 {
                     return false;
-                } else if ((piece_x > current_x && piece_y > current_y) && (x < current_x && y < current_y))
+                } else if ((piece_x > current_x && piece_y < current_y) && (x < current_x && y > current_y))
                 {
                     return false;
                 }
+
             }
             top_left[0]++;
             top_left[1]++;
             top_right[0]++;
             top_right[1]--;
         }
-        return true;
     }
+    
+    return true;
 }
 
-function checkPawn(piece_y,piece_x,y,x, piece_element)
+function checkPawn(piece_y,piece_x,y,x, piece_element, other_element)
 {
     if (piece_element.classList.contains("dark"))
     {
@@ -269,7 +308,7 @@ function checkPawn(piece_y,piece_x,y,x, piece_element)
         } else if (y == piece_y + 2 && board[y][x] == "n" && board[y-1][x] == "n" && piece_y == 1 && x == piece_x)
         {
             return true;
-        } else if (y = piece_y + 1 && x == piece_x + 1)
+        } else if ((y == piece_y + 1 && x == piece_x + 1) || (y == piece_y + 1 && x == piece_x - 1))
         {
             if (other_element != null)
             {
@@ -279,15 +318,15 @@ function checkPawn(piece_y,piece_x,y,x, piece_element)
                 }
             }
         }
-        } else if (piece_element.classList.contains("light"))
-        {
+    } else if (piece_element.classList.contains("light"))
+    {
         if (y == piece_y - 1 && board[y][x] == "n" && x == piece_x)
         {
             return true;
-        } else if (y == piece_y - 2 && board[y][x] == "n" && board[y+1][x] == "n" && piece_y == 6 && x == piece_x)
+        } else if (y == piece_y - 2 && board[y][x] == "n" && board[y-1][x] == "n" && piece_y == 6 && x == piece_x)
         {
             return true;
-        } else if (y = piece_y + 1 && x == piece_x + 1)
+        } else if ((y == piece_y - 1 && x == piece_x + 1) || (y == piece_y -1 && x == piece_x - 1))
         {
             if (other_element != null)
             {
@@ -310,7 +349,7 @@ function checkKnight(piece_y,piece_x,y,x,piece_element,other_element)
     || (y == piece_y + 1 && x == piece_x + 2) 
     || (y == piece_y - 1 && x == piece_x - 2) 
     || (y == piece_y + 1 && x == piece_x - 2) 
-    || (y == piece_y - 1 && x == piece_x - 2)) 
+    || (y == piece_y - 1 && x == piece_x + 2)) 
     {
         if (other_element != null)
         {
@@ -328,35 +367,86 @@ function checkKnight(piece_y,piece_x,y,x,piece_element,other_element)
             return true;
         }
     }
+    return false;
+}
+/* 8 Moves around king, checks are handled seperately 
+ *(y-1,x-1) (y-1, x==x), (y-1, x+1)
+ * (y==y, x-1) --------- (y==y, x+1)
+ * (y+1,x+1), (y+1, x==x), (y+1, x+1)
+ */
+function checkKing(piece_y, piece_x, y, x, piece_element, other_element)
+{
+    if ((y == piece_y - 1 && x == piece_x - 1) 
+    || (y == piece_y - 1 && x == piece_x) 
+    || (y == piece_y - 1 && x == piece_x + 1) 
+    || (y == piece_y && x == piece_x - 1) 
+    || (y == piece_y && x == piece_x + 1) 
+    || (y == piece_y + 1 && x == piece_x - 1) 
+    || (y == piece_y + 1 && x == piece_x) 
+    || (y == piece_y + 1 && x == piece_x + 1))
+    {
+        if (other_element != null)
+        {
+            if (piece_element.classList.contains("dark"))
+            {
+                if (other_element.classList.contains("light"))
+                {
+                    return true
+                }
+            } else if (other_element.classList.contains("dark"))
+            {
+                return true;
+            }
+        } else {
+            return true;
+        }
+    }
+    return false;
 }
 
-function checkCheck(color, temp_board)
+function checkCheck(color)
 {
-    if (color == "light")
+    if (color == "dark")
     {
-        var king = "lk";
-        var kingPos = findPiece(piece);
-        //Loop through all enemy pieces on the board and check if the king's position is a legal move for them
+        var king = "dk";
+        var kingPos = findPiece(king);
         for (var y = 0; y < 8; y++)
         {
             for (var x = 0; x < 8; x++)
             {
-                if (checkLegalMove(temp_board[y][x],kingPos[y],kingPos[x],findPiece(temp_board[y][x])))
+                if (board[y][x] != "n" && board[y][x].substring(0,1) != "d")
                 {
-                    return true;
+                    if (checkLegalMove(board[y][x],kingPos[0],kingPos[1],findPiece(board[y][x])))
+                    {
+                        console.log("dark king in check");
+                        return true;
+                    }
                 }
             }
         }
-        return false;
+    } else if (color == "light")
+    {
+        var king = "lk";
+        var kingPos = findPiece(king);
+        for (var y = 0; y < 8; y++)
+        {
+            for (var x = 0; x < 8; x++)
+            {
+                if (board[y][x] != "n" && board[y][x].substring(0,1) != "l")
+                {
+                    if (checkLegalMove(board[y][x],kingPos[0],kingPos[1],findPiece(board[y][x])))
+                    {
+                        console.log("light king in check");
+                        return true;
+                    }
+                }
+            }
+        }
     }
+    return false;
 }
 
 function init()
 {
-    updateBoard();
-    movePiece("dn0","c",6);
-    movePiece("dn0","d",4);
-    movePiece("dn0","c",2);
-    movePiece("dn0","d",4);
     updateBoard();
 }

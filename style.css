@@ -5,7 +5,9 @@
   display: flex;
   flex-direction: column;
   z-index: 8;
+  position: absolute;
 }
+
 
 .row {
   display: flex;
@@ -27,17 +29,19 @@
 .piece {
   width: 5vw;
   height: 5vw;
+  position: absolute;
   z-index: 9;
   -webkit-user-drag: none;
   position: absolute;
   user-select: none;
+  pointer-events: auto;
 }
 
 .pieces {
   position: absolute;
-  width: 40%;
-  height: 82%;
-  top: 9px;
+  width: 80%;
+  height: 164%;
+  pointer-events: none;
   /* background-color: pink;
   opacity: 0.5; */
 }
