@@ -34,8 +34,8 @@ window.onclick = e => {
             // target.style.pointerEvents = "unset";
             // console.log(e.target.id);  // to get the element tag name alone
             target = document.getElementById(e.target.id);
-            target.style.left = e.pageX + offsetX + "px";
-            target.style.top = e.pageY + offsetY + "px";
+            // target.style.left = e.pageX + offsetX + "px";
+            // target.style.top = e.pageY + offsetY + "px";
             holding = true;
         }
     }
@@ -68,4 +68,4 @@ function getSquareUnderPieces(mouseX,mouseY)
     return current;
 }
 
-document.addEventListener('mousemove', onMouseMove);
+// document.addEventListener('mousemove', onMouseMove);
